@@ -1,67 +1,67 @@
 const fs = require('fs');
 const express = require('express');
 const bodyParser = require('body-parser');
-const fortunes =require('./data/fortunes.json')
+const fortunes = require('./data/fortunes');
 
 const app = express();
 
-const writeFortunes = json => {
-    fs.writeFile('./data/fortunes.json', JSON.stringify(json), err => console.log(err));
-};
-
 app.use(bodyParser.json());
 
-app.get('/api/fortunes', (req, res)=> {
-    res.json(fortunes);
+app.get('/api/fortunes', (req, res) => {
+  res.json(fortunes);
 });
 
-app.get('/api/fortunes/random', (req, res)=> {
-    res.json(fortunes[Math.floor(Math.random() * fortunes.length)]);
+app.get('/api/fortunes/random', (req, res) => {
+  res.json(fortunes[Math.floor(Math.random() * fortunes.length)]);
 });
 
-app.get('/api/fortunes/:id', (req, res)=> {
-    res.json(fortunes.find( f => f.id == req.params.id));
+app.get('/api/fortunes/:id', (req, res) => {
+  res.json(fortunes.find(f => f.id == req.params.id));
 });
 
-app.post('/api/fortunes', (req, res)=> {
-    const { message, lucky_number, spirit_animal } = req.body;
+const writeFortunes = json => {
+  fs.writeFile('./data/fortunes.json', JSON.stringify(json), err => console.log(err));
+};
 
-    const fortune_ids = fortunes.map(f => f.id);
+app.post('/api/fortunes', (req, res) => {
+  const { message, lucky_number, spirit_animal } = req.body;
 
-    const new_fortunes = fortunes.concat({
-        id: (fortune_ids.length > 0 ? Math.max(...fortune_ids) : 0) + 1,
-        message,
-        lucky_number,
-        spirit_animal
-    });
+  const fortune_ids = fortunes.map(f => f.id);
 
-    writeFortunes(new_fortunes);
+  const new_fortunes = fortunes.concat({
+    id: (fortune_ids.length > 0 ? Math.max(...fortune_ids) : 0) + 1,
+    message,
+    lucky_number,
+    spirit_animal
+  });
 
-    res.json(new_fortunes);
+  writeFortunes(new_fortunes);
+
+  res.json(new_fortunes);
 });
 
-app.put('/fortunes/:id', (req, res) => {
-    const { id } = req.params;
-  
-    const old_fortune = fortunes.find(f => f.id == id);
-  
-    ['message', 'lucky_number', 'spirit_animal'].forEach(key => {
-      if (req.body[key]) old_fortune[key] = req.body[key];
-    });
-  
-    writeFortunes(fortunes);
-  
-    res.json(fortunes);
+app.put('/api/fortunes/:id', (req, res) => {
+  const { id } = req.params;
+
+  const old_fortune = fortunes.find(f => f.id == id);
+
+  ['message', 'lucky_number', 'spirit_animal'].forEach(key => {
+    if (req.body[key]) old_fortune[key] = req.body[key];
+  });
+
+  writeFortunes(fortunes);
+
+  res.json(fortunes);
 });
-  
-app.delete('/fortunes/:id', (req, res) => {
-    const { id } = req.params;
 
-    const new_fortunes = fortunes.filter(f => f.id != id);
+app.delete('/api/fortunes/:id', (req, res) => {
+  const { id } = req.params;
 
-    writeFortunes(new_fortunes);
+  const new_fortunes = fortunes.filter(f => f.id != id);
 
-    res.json(new_fortunes);
+  writeFortunes(new_fortunes);
+
+  res.json(new_fortunes);
 });
 
 module.exports = app;
